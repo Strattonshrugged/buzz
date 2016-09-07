@@ -1,0 +1,16 @@
+
+$(function(){
+    $('.header').jrumble({speed:0});
+
+    var demoStart = function(){
+       $('.header').trigger('startRumble');
+       $('.header').css('textShadow','#FF0 4px 4px,#FF0 -4px -4px');
+       setTimeout(demoStop, 1000);
+    };
+    var demoStop = function(){
+       $('.header').trigger('stopRumble');
+       $('.header').css('textShadow','');
+       setTimeout(demoStart, 1000);
+    };
+    demoStart();
+});

@@ -1,0 +1,49 @@
+
+
+<html>
+    <head>
+        <title> Gamebuzzer </title>
+        <style> <%- include css.ejs %> </style>
+    </head>
+    <body>
+        <div class="wrapper">
+            <div>
+                <%- include headerhtml.ejs %>
+            </div>
+            <div class="content">
+                Welcome to Gamebuzzer! <br> Please select from the follow options <hb>
+            </div>
+            <form id="form" action='' method='post'>
+                <ul>
+                <li>
+                    <input type="radio" name="radio" onchange="onChange(this);" id="owner" value="/o">
+                        Start A New Game
+                </li>
+                <li>
+                    <input type="radio" name="radio" onchange="onChange(this);" id="player" value="/p">
+                        Join A Game
+                </li>
+                <input type="text" placeholder="(game name goes here)" name="landingInput">
+                <input type="submit" name="gameName" value="gameName" />
+            </form>
+        </div>  <!-- end of wrapper -->
+
+        <script src="http://code.jquery.com/jquery-latest.min.js"> </script>
+        <script type="text/javascript"> <%- include jrumble.ejs %> </script>
+        <script type="text/javascript"> <%- include headerjs.ejs %> </script>
+        <script>
+            function onChange(radio) {
+                form.setAttribute('action', radio.value);
+            }
+        </script>
+
+
+
+
+<!--    script to work the radio button switch goes here -->
+<!--    if submit is pushed and no text is entered it should change placeholder-->
+<!--    if submit is pushed and no text is entered it should change radio buttons red-->
+<!--    radio button selection submits things as either a /o for owner or /p for player-->
+
+    </body>
+</html>
