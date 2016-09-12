@@ -11,21 +11,27 @@
                 <%- include headerhtml.ejs %>
             </div>
             <div class="content">
-                Welcome to Gamebuzzer! <br> Please select from the follow options <hb>
+                Welcome to Gamebuzzer! <hr>
+                Choose to start a new game and give it a name <br>
+                OR <br>
+                Choose to join a game and enter the game key words <hr>
             </div>
             <form id="form" action='' method='post'>
                 <ul>
                 <li>
                     <input type="radio" name="radio" onchange="onChange(this);" id="owner" value="/o">
-                        Start A New Game
+                        Create A New Game
                 </li>
                 <li>
                     <input type="radio" name="radio" onchange="onChange(this);" id="player" value="/p">
                         Join A Game
                 </li>
-                <input type="text" placeholder="(game name goes here)" name="landingInput">
-                <input type="submit" name="gameName" value="gameName" />
+                <input type="text" placeholder="(game name goes here)" id="landingInput" name="landingInput">
+                <input id="submit" type="submit" name="gameName" value="Lets Play!" />
             </form>
+            <div class="error">
+                <%- error %>
+            </div>
         </div>  <!-- end of wrapper -->
 
         <script src="http://code.jquery.com/jquery-latest.min.js"> </script>
@@ -35,9 +41,20 @@
             function onChange(radio) {
                 form.setAttribute('action', radio.value);
             }
+
+            $(document).mousemove(function()    {
+                if (
+                        ($('#landingInput').val() !='')
+                        &&
+                        (($('#player').is(':checked')) || ($('#owner').is(':checked')))
+                    )   /* end of if condition */
+
+                    {   /* start of if autonomous function */
+                        $('#submit').removeAttr( "disabled" );
+                } /* end of 'if' autonomous function */
+            }); /* end of mousemove autonomous function */
+
         </script>
-
-
 
 
 <!--    script to work the radio button switch goes here -->
