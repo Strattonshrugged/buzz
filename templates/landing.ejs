@@ -16,18 +16,18 @@
                 OR <br>
                 Choose to join a game and enter the game key words <hr>
             </div>
-            <form id="form" action='' method='post'>
+            <form id="form" action='/g' method='post'>
                 <ul>
                 <li>
-                    <input type="radio" name="radio" onchange="onChange(this);" id="owner" value="/o">
+                    <input type="radio" name="radio" id="owner" value="owner">
                         Create A New Game
                 </li>
                 <li>
-                    <input type="radio" name="radio" onchange="onChange(this);" id="player" value="/p">
+                    <input type="radio" name="radio" id="player" value="player">
                         Join A Game
                 </li>
-                <input type="text" placeholder="(game name goes here)" id="landingInput" name="landingInput">
-                <input id="submit" type="submit" name="gameName" value="Lets Play!" />
+                <input type="text" placeholder="(game name goes here)" name="landingInput" id="landingInput" >
+                <input id="submit" type="submit" value="Lets Play!" disabled="true"/>
             </form>
             <div class="error">
                 <%- error %>
@@ -38,29 +38,16 @@
         <script type="text/javascript"> <%- include jrumble.ejs %> </script>
         <script type="text/javascript"> <%- include headerjs.ejs %> </script>
         <script>
-            function onChange(radio) {
-                form.setAttribute('action', radio.value);
-            }
-
             $(document).mousemove(function()    {
                 if (
                         ($('#landingInput').val() !='')
                         &&
                         (($('#player').is(':checked')) || ($('#owner').is(':checked')))
-                    )   /* end of if condition */
-
-                    {   /* start of if autonomous function */
+                    )
+                    {
                         $('#submit').removeAttr( "disabled" );
-                } /* end of 'if' autonomous function */
-            }); /* end of mousemove autonomous function */
-
+                    }
+            });
         </script>
-
-
-<!--    script to work the radio button switch goes here -->
-<!--    if submit is pushed and no text is entered it should change placeholder-->
-<!--    if submit is pushed and no text is entered it should change radio buttons red-->
-<!--    radio button selection submits things as either a /o for owner or /p for player-->
-
     </body>
 </html>

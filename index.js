@@ -19,7 +19,7 @@ function game(spokenID, gameID, ownerCookie, givenName, joinUrl) {
     this.joinUrl = joinUrl;         // cut and paste link to enter game
 }
 
-// game databases including a test case
+// game database including a test case
 var database = [
     {'spokenID' : 'Funky Chicken',
     'gameID' : 'funkychicken',
@@ -73,33 +73,56 @@ app.get('/', function(req, res){
     res.render('landing', {'error' : ''});
 });
 
-// owner selection, for creating new games
-app.post('/o', function(req, res){
-    var chosenName = req.body.landingInput;
-    // create a new game object
-        // make sure it isn't in the existing databases, otherwise retry
-    res.redirect('/o');
-});
+// switchboard
+app.post('/g', function(req, res){
+    console.log('req.body follows ... ' + JSON.stringify(req.body));
+    var option = req.body.radio;
+    var landingInput = converter(req.body.landingInput);
+    if (option == 'player')   {
+        // TODO substitute grep jquery here
+        var id = undefined;
+        for (var i = 0; i < database.length; i++)   {
+            if (database[i].gameID == landingInput) {
+                id = landingInput;
+                console.log('gameID found, id changed to ' + id);
+            }
+        };
+        if (id == undefined)    {
+            res.render('landing', {'error' : 'Oh no! Cannot locate game'});
+        }   else {
+            res.redirect('/g/' + id);
+        }
+    }   else { // here meaning radio button set to create new game not join existing one
 
-app.get('/o', function (req, res){
-    // send them instructions on how to tell other people to join
-    res.render('owner');
-    // console.log('Redirected to owner page');
+        // run create a game function
+        // give them the cookieCode
+        // send them over there as the owner
+
+    }
 })
 
-// player selection
-app.post('/p', function(req, res){
-    var gameName = converter(req.body.landingInput);
-    // see if the gameName is in the database directory
-    // if it is, redirect them to the page
-    // if it is not, redirect them to the landing page with an error message
-    res.redirect('/p');
-});
+// sending to game
+app.get('/g/:id', function (req, res)   {
+    var gameID = req.params.id;
+    var index = undefined;
+    //TODO substitute grep jquery here, finding game object location in database
+    for (var i = 0; i < database.length; i++)   {
+        if (database[i].gameID == gameID) {
+            index = i;
+            console.log('index changed to ' + i);
+        }
+    };
+    if (req.cookies.gamebuzzer == database[index].ownerCookie)  {
+        res.render('owner', {'givenName' : database[index].givenName,'spokenID' : database[index].spokenID});
+    }   else {
+        res.render('player', {'givenName' : database[index].givenName,'spokenID' : database[index].spokenID});
+    }
+}) // end of app.get
 
-app.get('/p', function (req, res){
-    res.render('player');
-    // console.log('Redirected to player page');
-})
+
+
+// NEXT tweak owner page to make sure it's receiving the above properties
+
 
 
 // making connections

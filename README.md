@@ -1,10 +1,4 @@
 
-TODO Try to enter game, if it does exist, reroute owner/player to it
-TODO Try to enter game, if it does not exist, reroute back to '/' with error
-
-
-
-
 TODO Pass the text input on the landing page to the owner and player pages somehow
 TODO Create a unique ID code generator to pass as a cookie to the game owner
 TODO If someone tries to join a game in progress and they have the cookie code, they become the owner
