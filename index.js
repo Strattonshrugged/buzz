@@ -9,6 +9,7 @@ var bodyParser = require('body-parser');
 app.use(bodyParser());
 var cookieParser = require('cookie-parser');
 app.use(cookieParser());
+// var $ = require('jQuery');
 // var generateID = require('./generateID.js');
 
 function Game(spokenID, gameID, ownerCookie, givenName, joinUrl) {
@@ -19,13 +20,13 @@ function Game(spokenID, gameID, ownerCookie, givenName, joinUrl) {
     this.joinUrl = joinUrl;         // cut and paste link to enter game
 }
 
-// game database including a test case
+// TODO change database from array to dictionary, use gameID as key to locate object
 var database = [
     {'spokenID' : 'Funky Chicken',
     'gameID' : 'funkychicken',
     'ownerCookie' : '123',
     'givenName' : 'Test Case',
-    'joinUrl' : 'http://localhost:4000/p/funkychicken'}
+    'joinUrl' : 'http://localhost:4000/g/funkychicken'}
 ];    //where all games are stored
 
 
@@ -40,7 +41,9 @@ function converter(string)  {
 };
 
 function isValidGame(property)   {
+    // console.log('isValidGame called');
     var condensed = converter(property);
+    // console.log('isValidGame condensed value is ' + condensed);
     for (var i in database)  {
         if (database[i].gameID == condensed)   {
             return true;
@@ -54,16 +57,19 @@ var randomWords1 = fs.readFileSync("randomWords1").toString().split('\n').filter
 var randomWords2 = fs.readFileSync("randomWords2").toString().split('\n').filter(isValidName);
 
 function createID() {
+    // console.log('createID called');
     var spokenID = null;
     while (spokenID == null)   {
         var random1 = randomWords1[Math.floor(Math.random()*randomWords1.length)];
         var random2 = randomWords2[Math.floor(Math.random()*randomWords2.length)];
         var testID = random1 + " " + random2;
-        var unique = isValidGame(testID);
-        if (unique == true) {
+        var gameExists = isValidGame(testID);
+        // console.log('back into createID from isValidGame, gameExists is ' + gameExists);
+        if (gameExists == false) {
             spokenID = testID;
         }
     }
+    // console.log('spokenID is being returned');
     return spokenID;
 };
 
@@ -79,57 +85,70 @@ app.get('/', function(req, res){
 
 // receive input from landing
 app.post('/g', function(req, res){
-    console.log('req.body follows ... ' + JSON.stringify(req.body));
+    // console.log('req.body follows ... ' + JSON.stringify(req.body));
     var option = req.body.radio;
+    var id = converter(req.body.landingInput);
     if (option == 'player')   {
-        var id = converter(req.body.landingInput);
-        console.log('landingInput is ' + id);
-        // TODO replace this loop with the jquery grep command
+        // console.log('landingInput is ' + id);
         var idCheck = isValidGame(id);
-
         if (idCheck == false)    {
             res.render('landing', {'error' : 'Oh no! Cannot locate game'});
         }   else {
+            // console.log('Before redirecting to app.get the id value is ' + id);
             res.redirect('/g/' + id);
         }
-    }   else { // here meaning radio button set to create new game not join existing one
+    }   else if (option == 'owner') { // here meaning radio button set to create new game not join existing one
         var newID = createID();
-        var randomNumber = Math.floor((Math.random() * 10000));
-
-        console.log(randomNumber);
+        // console.log('New ID is ' + newID);
+        var randomKey = Math.floor((Math.random() * 10000));
+        // console.log('randomKey is ' + randomKey);
         var game = new Game();
         game.spokenID = newID;
         game.gameID = converter(newID);
-        game.ownerCookie = randomNumber;
+        game.ownerCookie = randomKey;
         game.givenName = req.body.landingInput;
-        game.joinUrl = req.get('host' + req.path);
-        console.log(JSON.stringify(game));
+        game.joinUrl = req.get('host') + req.path + '/' + converter(newID);
 
+        console.log(JSON.stringify(database[0]));
         database.push(game);
-        console.log('Just pushed ' + JSON.stringify(game) + 'to database');
+        console.log(JSON.stringify(database[0]));
+        console.log(JSON.stringify(database[1]));
 
-        res.cookie('gamebuzzer', randomNumber);
-        res.redirect('/g/' + id);
+        // console.log('Just pushed game to database as ' + JSON.stringify(game));
+
+        res.cookie('gamebuzzer', randomKey);
+        // console.log('gamebuzzer cookie has been set');
+        // console.log('Before redirecting to app.get the id value is ' + id);
+        res.redirect('/g/' + converter(newID));
+    }   else {
+        res.render('landing', {'error' : 'Something has gone horribly wrong'});
     }
 })
 
 // sending to game
 app.get('/g/:id', function (req, res)   {
     var gameID = req.params.id;
-    var index = null;
-    //TODO substitute grep jquery here, finding game object location in database
 
-
-    for (var i = 0; i < database.length; i++)   {
-        if (database[i].gameID == gameID) {
-            index = i;
-            console.log('index changed to ' + i);
+function fetchObject (array) {
+    for (var i = 0; i < array.length; i++) {
+        if (array[i].gameID == gameID)   {
+            return array[i];
         }
-    };
-    if (req.cookies.gamebuzzer == database[index].ownerCookie)  {
-        res.render('owner', {'givenName' : database[index].givenName,'spokenID' : database[index].spokenID});
+    }
+}
+
+    console.log('stringified index one in database ' + JSON.stringify(database[1]));
+    console.log('gameID variable is ' + gameID);
+    var gameObject = fetchObject(database);
+    console.log('gameObject is ' + gameObject);
+    console.log('gameObject stringified is ' + JSON.stringify(gameObject));
+
+    if (req.cookies.gamebuzzer == gameObject.ownerCookie)  {
+        // console.log('Owner template to be served!');
+        res.render('owner', {'givenName' : gameObject.givenName,'spokenID' : gameObject.spokenID});
     }   else  {
-        res.render('player', {'givenName' : database[index].givenName,'spokenID' : database[index].spokenID});
+        // console.log('Player template to be served!');
+        res.render('player', {'givenName' : gameObject.givenName,'spokenID' : gameObject.spokenID});
     }
 }) // end of app.get
 
