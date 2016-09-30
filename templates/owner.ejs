@@ -14,10 +14,11 @@
                 Welcome to the Owner Page! <br>
                 This game is named <%- givenName %>! <br>
                 The key words for this game are <%- spokenID %> <br>
-<hr>
-                And here is where I will put all the controls and stuff ...
-
-
+                <hr>
+                <ul id="messageboard"></ul>
+                <form action="">
+                    <input id="m" autocomplete="off" />
+                    <button>Send</button>
             </div>
         </div>  <!-- end of wrapper -->
 
@@ -25,7 +26,17 @@
         <script type="text/javascript"> <%- include jrumble.ejs %> </script>
         <script type="text/javascript"> <%- include headerjs.ejs %> </script>
 
-
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            var socket = io();
+            $('form').submit(function(){
+                socket.emit('chat message', $('#m').val());
+                $('#m').val('');
+                return false;
+            });
+            socket.on('chat message', function(msg){
+                $('#messageboard').append($('<li>').text(msg));
+            });
         </script>
 
 

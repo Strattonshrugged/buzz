@@ -2,15 +2,15 @@
 var express = require('express');
 var app = express();
 var http = require('http').Server(app);
-var io = require('socket.io')(http);
+var io = require('socket.io')(http); // added two lines below
+// var io = require('socket.io').listen(http);
+// require('../sockets/base')(io);
 var fs = require('fs');
 var ejs = require('ejs');
 var bodyParser = require('body-parser');
 app.use(bodyParser());
 var cookieParser = require('cookie-parser');
 app.use(cookieParser());
-// var $ = require('jQuery');
-// var generateID = require('./generateID.js');
 
 function Game(spokenID, gameID, ownerCookie, givenName, joinUrl) {
     this.spokenID = spokenID;       // more readable version of gameID Funky Chicken or Panda Cakewalk
@@ -109,10 +109,10 @@ app.post('/g', function(req, res){
         game.givenName = req.body.landingInput;
         game.joinUrl = req.get('host') + req.path + '/' + converter(newID);
 
-        console.log(JSON.stringify(database[0]));
+        // console.log(JSON.stringify(database[0]));
         database.push(game);
-        console.log(JSON.stringify(database[0]));
-        console.log(JSON.stringify(database[1]));
+        // console.log(JSON.stringify(database[0]));
+        // console.log(JSON.stringify(database[1]));
 
         // console.log('Just pushed game to database as ' + JSON.stringify(game));
 
@@ -137,11 +137,11 @@ function fetchObject (array) {
     }
 }
 
-    console.log('stringified index one in database ' + JSON.stringify(database[1]));
-    console.log('gameID variable is ' + gameID);
+    // console.log('stringified index one in database ' + JSON.stringify(database[1]));
+    // console.log('gameID variable is ' + gameID);
     var gameObject = fetchObject(database);
-    console.log('gameObject is ' + gameObject);
-    console.log('gameObject stringified is ' + JSON.stringify(gameObject));
+    // console.log('gameObject is ' + gameObject);
+    // console.log('gameObject stringified is ' + JSON.stringify(gameObject));
 
     if (req.cookies.gamebuzzer == gameObject.ownerCookie)  {
         // console.log('Owner template to be served!');
@@ -152,9 +152,15 @@ function fetchObject (array) {
     }
 }) // end of app.get
 
-
-
 // making connections
+io.on('connection', function(socket){
+    console.log('connection detected');
+    socket.on('chat message', function(msg){
+        io.emit('chat message', msg);
+  });
+});
+
+
 http.listen(4000, function(){
     console.log('listening on *:4000');
 });
