@@ -28,7 +28,8 @@
 
         <script src="/socket.io/socket.io.js"></script>
         <script>
-            var socket = io();
+            /*var socket = io('/my-namespace');*/
+            var socket = io('/<%- gameID %>');
             $('form').submit(function(){
                 socket.emit('chat message', $('#m').val());
                 $('#m').val('');

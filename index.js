@@ -2,9 +2,7 @@
 var express = require('express');
 var app = express();
 var http = require('http').Server(app);
-var io = require('socket.io')(http); // added two lines below
-// var io = require('socket.io').listen(http);
-// require('../sockets/base')(io);
+var io = require('socket.io')(http);
 var fs = require('fs');
 var ejs = require('ejs');
 var bodyParser = require('body-parser');
@@ -109,12 +107,19 @@ app.post('/g', function(req, res){
         game.givenName = req.body.landingInput;
         game.joinUrl = req.get('host') + req.path + '/' + converter(newID);
 
-        // console.log(JSON.stringify(database[0]));
         database.push(game);
-        // console.log(JSON.stringify(database[0]));
-        // console.log(JSON.stringify(database[1]));
 
-        // console.log('Just pushed game to database as ' + JSON.stringify(game));
+        // make new namespace for game
+        var nsp = io.of('/' + game.gameID);
+        nsp.on('connection', function(socket){
+            console.log('Connection detected');
+            socket.on('chat message', function(msg){
+                console.log('Socket is being called, message received');
+                // io.emit('chat message', msg, nsp);
+                nsp.emit('chat message', msg);
+            });
+        });
+        // TODO save off namespace by gameID?
 
         res.cookie('gamebuzzer', randomKey);
         // console.log('gamebuzzer cookie has been set');
@@ -145,21 +150,22 @@ function fetchObject (array) {
 
     if (req.cookies.gamebuzzer == gameObject.ownerCookie)  {
         // console.log('Owner template to be served!');
-        res.render('owner', {'givenName' : gameObject.givenName,'spokenID' : gameObject.spokenID});
+        res.render('owner', {'givenName' : gameObject.givenName,'spokenID' : gameObject.spokenID, 'gameID' : gameID});
     }   else  {
         // console.log('Player template to be served!');
-        res.render('player', {'givenName' : gameObject.givenName,'spokenID' : gameObject.spokenID});
+        res.render('player', {'givenName' : gameObject.givenName,'spokenID' : gameObject.spokenID, 'gameID' : gameID});
     }
 }) // end of app.get
 
 // making connections
-io.on('connection', function(socket){
-    console.log('connection detected');
-    socket.on('chat message', function(msg){
-        io.emit('chat message', msg);
-  });
-});
 
+
+
+// io.on('connection', function(socket){
+//     socket.on('chat message', function(msg){
+//         io.emit('chat message', msg);
+//   });
+// });
 
 http.listen(4000, function(){
     console.log('listening on *:4000');
