@@ -18,14 +18,15 @@ function Game(spokenID, gameID, ownerCookie, givenName, joinUrl) {
     this.joinUrl = joinUrl;         // cut and paste link to enter game
 }
 
-// TODO change database from array to dictionary, use gameID as key to locate object
-var database = [
+// game storage
+var database = {
+    "funkychicken" :
     {'spokenID' : 'Funky Chicken',
     'gameID' : 'funkychicken',
     'ownerCookie' : '123',
-    'givenName' : 'Test Case',
+    'givenName' : 'the jungle, baby, we\'ve got fun and games ...',
     'joinUrl' : 'http://localhost:4000/g/funkychicken'}
-];    //where all games are stored
+};
 
 
 // helper functions
@@ -33,19 +34,26 @@ function isValidName (name) {
     return name != '';
 };
 
-function converter(string)  {
+function condensor(string)  {
     var str = string.replace(/\s/g, '').toLowerCase();
     return str;
 };
 
 function isValidGame(property)   {
-    var condensed = converter(property);
-    for (var i in database)  {
-        if (database[i].gameID == condensed)   {
-            return true;
-        };
-    };
-    return false;
+    var condensedName = condensor(property);
+    if (database.condensedName == undefined)    {
+        return false;
+    }   else {
+        return true;
+    }
+
+
+    // for (var i in database)  {
+    //     if (database[i].gameID == condensed)   {
+    //         return true;
+    //     };
+    // };
+    // return false;
 };
 
 // unique ID generation
@@ -79,12 +87,14 @@ app.get('/', function(req, res){
 // receive input from landing
 app.post('/g', function(req, res){
     var option = req.body.radio;
-    var id = converter(req.body.landingInput);
+    var id = condensor(req.body.landingInput);
     if (option == 'player')   {
         var idCheck = isValidGame(id);
-        if (idCheck == false)    {
+        if (idCheck == true)    {
             res.render('landing', {'error' : 'Oh no! Cannot locate game'});
         }   else {
+            // console.log('redirect to /g/ + id is occurring');
+            // console.log('redirect id is ' + id);
             res.redirect('/g/' + id);
         }
     }   else if (option == 'owner') { // here meaning radio button set to create new game not join existing one
@@ -92,76 +102,46 @@ app.post('/g', function(req, res){
         var randomKey = Math.floor((Math.random() * 10000));
         var game = new Game();
         game.spokenID = newID;
-        game.gameID = converter(newID);
+        game.gameID = condensor(newID);
         game.ownerCookie = randomKey;
         game.givenName = req.body.landingInput;
-        game.joinUrl = req.get('host') + req.path + '/' + converter(newID);
+        game.joinUrl = req.get('host') + req.path + '/' + condensor(newID);
 
-        database.push(game);
+        database[condensor(newID)] = game;
 
         // make new namespace for game
-        var nsp = io.of('/' + game.gameID);
+        console.log('database[condensor(newID)].gameID is ' + database[condensor(newID)].gameID)
+        var nsp = io.of('/' + database[condensor(newID)].gameID);
         nsp.on('connection', function(socket){
-            console.log('Connection detected');
+            console.log('Socket connection detected');
             socket.on('chat message', function(msg){
-                console.log('Socket is being called, message received');
                 nsp.emit('chat message', msg);
             });
         });
         // TODO save off namespace by gameID?
 
         res.cookie('gamebuzzer', randomKey);
-        // console.log('gamebuzzer cookie has been set');
-        // console.log('Before redirecting to app.get the id value is ' + id);
-        res.redirect('/g/' + converter(newID));
+        res.redirect('/g/' + condensor(newID));
     }   else {
         res.render('landing', {'error' : 'Something has gone horribly wrong'});
     }
-})
+});
 
 // sending to game
 app.get('/g/:id', function (req, res)   {
-    var gameID = req.params.id;
+    var thisGame = req.params.id;
+    // console.log('thisGame : ' + thisGame);
+    // console.log('database : ' + JSON.stringify(database));
+    // console.log('database[thisGame].ownerCookie : ' + database[thisGame].ownerCookie);
 
-function fetchObject (array) {
-    for (var i = 0; i < array.length; i++) {
-        if (array[i].gameID == gameID)   {
-            return array[i];
-        }
-    }
-}
-
-    var gameObject = fetchObject(database);
-
-    if (req.cookies.gamebuzzer == gameObject.ownerCookie)  {
-        // console.log('Owner template to be served!');
-        res.render('owner', {'givenName' : gameObject.givenName,'spokenID' : gameObject.spokenID, 'gameID' : gameID});
+    if (req.cookies.gamebuzzer == database[thisGame].ownerCookie)  {
+        res.render('owner', {'givenName' : database[thisGame].givenName,'spokenID' : database[thisGame].spokenID, 'gameID' : database[thisGame].gameID});
     }   else  {
-        // console.log('Player template to be served!');
-        res.render('player', {'givenName' : gameObject.givenName,'spokenID' : gameObject.spokenID, 'gameID' : gameID});
+        res.render('player', {'givenName' : database[thisGame].givenName,'spokenID' : database[thisGame].spokenID, 'gameID' : database[thisGame].gameID});
     }
-}) // end of app.get
+});
 
 // listening for connections
-
 http.listen(4000, function(){
     console.log('listening on *:4000');
 });
-
-// testing and experimentation
-var testbase = {
-    '007' : {'fname' : 'James','lname' : 'Bond','nation' : 'British'},
-    'Damon' : {'fname' : 'Jason','lname' : 'Bourne','nation' : 'American'},
-    'PinkPanther' : {'fname' : 'Inspector','lname' : 'Clousseau','nation' : 'French'}
-}
-// I like that ... now how the hell do I insert that into a database ...
-var condorFile = {'fname' : 'Jackie','lname' : 'Chan','nation' : 'China'}
-console.log('condorFile is : ' + JSON.stringify(condorFile))
-testbase.Condor = condorFile;
-console.log('testbase.Condor : ' + JSON.stringify(testbase.Condor));
-console.log('testbase.Condor.nation : ' + testbase.Condor.nation);
-
-
-// console.log('Whole testbase : ' + JSON.stringify(testbase))
-// console.log('testbase.Damon.fname : ' + testbase.Damon.fname)
-// console.log('testbase.PinkPanther.nation : ' + testbase.PinkPanther.nation)
