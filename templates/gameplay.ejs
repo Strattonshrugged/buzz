@@ -1,0 +1,29 @@
+var socket = io('/<%- gameID %>');
+
+// chat functions for testing
+$('#chatBox').submit(function(){
+    socket.emit('chat message', $('#chatInput').val());
+    $('#chatInput').val('');
+    return false;
+});
+socket.on('chat message', function(msg){
+    $('#chatboard').append($('<li>').text(msg));
+});
+
+// player buzzing in function
+$('#playerBox').submit(function(){
+    socket.emit('buzz in', $('#playerName').val());
+    return false;
+});
+socket.on('buzz in', function(msg){
+    $('#gameboard').append($('<li>').text(msg));
+});
+
+//owner reseting gameboard function
+$('#resetButton').submit(function(){
+    socket.emit('reset gameboard')
+    return false;
+});
+socket.on('reset gameboard', function(){
+    $('#gameboard').empty();
+})

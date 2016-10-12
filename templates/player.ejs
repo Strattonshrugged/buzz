@@ -15,10 +15,28 @@
                 Welcome to <%- givenName %>! <br>
                 The key words for this game are <%- spokenID %> <br>
                 <hr>
-                <ul id="messageboard"></ul>
-                <form action="">
-                    <input id="m" autocomplete="off" />
-                    <button>Send</button>
+
+                <fieldset>
+                    <legend>player input</legend>
+                    <form id="playerBox" action="">
+                        <input id="playerName" autocomplete="off" />
+                        <button>Buzz In</button>
+                    </form>
+                </fieldset>
+
+                <fieldset>
+                    <legend>gameboard</legend>
+                    <ul id="gameboard"></ul>
+                </fieldset>
+
+                <fieldset>
+                    <legend>chatboard</legend>
+                    <ul id="chatboard"></ul>
+                    <form id="chatBox" action="">
+                        <input id="chatInput" autocomplete="off" />
+                        <button>Send</button>
+                    </form>
+                </fieldset>
             </div>
         </div>  <!-- end of wrapper -->
 
@@ -27,18 +45,8 @@
         <script type="text/javascript"> <%- include headerjs.ejs %> </script>
 
         <script src="/socket.io/socket.io.js"></script>
-        <script>
-            /*var socket = io('/my-namespace');*/
-            var socket = io('/<%- gameID %>');
-            $('form').submit(function(){
-                socket.emit('chat message', $('#m').val());
-                $('#m').val('');
-                return false;
-            });
-            socket.on('chat message', function(msg){
-                $('#messageboard').append($('<li>').text(msg));
-            });
-        </script>
+        <script type="text/javascript"> <%- include gameplay.ejs %> </script>
+
 
 
     </body>

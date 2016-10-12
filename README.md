@@ -1,7 +1,6 @@
 
-TODO Pass the text input on the landing page to the owner and player pages somehow
-TODO Create a unique ID code generator to pass as a cookie to the game owner
-TODO If someone tries to join a game in progress and they have the cookie code, they become the owner
+
+
 TODO Player and Owner pages should all have a div that shows "blocks" of submissions
 TODO Players should have a submit button to submit their answer to the gameboard
 TODO Owners should have a clear button to clear the submissions from the gameboard

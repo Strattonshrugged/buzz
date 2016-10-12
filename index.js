@@ -114,8 +114,17 @@ app.post('/g', function(req, res){
         var nsp = io.of('/' + database[condensor(newID)].gameID);
         nsp.on('connection', function(socket){
             console.log('Socket connection detected');
+
             socket.on('chat message', function(msg){
                 nsp.emit('chat message', msg);
+            });
+
+            socket.on('buzz in', function(msg){
+                nsp.emit('buzz in', msg);
+            });
+
+            socket.on('reset gameboard', function(){
+                nsp.emit('reset gameboard');
             });
         });
         // TODO save off namespace by gameID?
